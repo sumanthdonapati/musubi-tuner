@@ -930,8 +930,13 @@ def save_latent(latent: torch.Tensor, args: argparse.Namespace, height: int, wid
 
     seed = args.seed
 
-    if args.append_original_name and args.edit and args.control_image_path is not None:
-        original_base_name = os.path.basename(args.control_image_path)
+    if (
+        args.append_original_name
+        and (args.edit or args.edit_plus)
+        and args.control_image_path is not None
+        and len(args.control_image_path) > 0
+    ):
+        original_base_name = os.path.basename(args.control_image_path[0])
         original_base_name = os.path.splitext(original_base_name)[0]
         original_name = f"_{original_base_name}"
     else:
@@ -1026,8 +1031,13 @@ def save_output(
     if args.output_type == "images" or args.output_type == "latent_images":
         # save images
         if original_base_names is None or len(original_base_names) == 0:
-            if args.append_original_name and args.edit and args.control_image_path is not None:
-                original_base_name = os.path.basename(args.control_image_path)
+            if (
+                args.append_original_name
+                and (args.edit or args.edit_plus)
+                and args.control_image_path is not None
+                and len(args.control_image_path) > 0
+            ):
+                original_base_name = os.path.basename(args.control_image_path[0])
                 original_base_name = os.path.splitext(original_base_name)[0]
                 original_name = f"_{original_base_name}"
             else:
@@ -1215,6 +1225,7 @@ def process_batch_prompts(prompts_data: List[Dict], args: argparse.Namespace) ->
 
     del shared_models_for_generate["model"]
     del dit_model
+    gc.collect()
     clean_memory_on_device(device)
     synchronize_device(device)  # Ensure memory is freed before loading VAE for decoding
 
