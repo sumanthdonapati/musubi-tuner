@@ -64,6 +64,12 @@
 
 GitHub Discussionsを有効にしました。コミュニティのQ&A、知識共有、技術情報の交換などにご利用ください。バグ報告や機能リクエストにはIssuesを、質問や経験の共有にはDiscussionsをご利用ください。[Discussionはこちら](https://github.com/kohya-ss/musubi-tuner/discussions)
 
+- 2025/10/13
+    - Qwen-Image-Edit、2509の推論スクリプトで、ピクセル単位での生成画像の一貫性を向上するReference Consistency Mask (RCM)機能を追加しました。[PR #643]
+    (https://github.com/kohya-ss/musubi-tuner/pull/643)
+        - RCMは、生成画像が制御画像と比較してわずかな位置ずれを起こす問題を解決します。詳細は[Qwen-Imageのドキュメント](./docs/qwen_image.md#inpainting-and-reference-consistency-mask-rcm)を参照してください。
+    - あわせて同PRにて `--resize_control_to_image_size` オプションが指定されていない場合でも、コントロール画像が出力画像と同じサイズにリサイズされてしまう不具合を修正しました。**生成画像が変化する可能性がありますので、オプションを確認してください。** 
+
 - 2025/10/03
     - 各学習スクリプトで用いられているblock swap機構を改善し、Windows環境における共有GPUメモリの使用量を大きく削減しました。[PR #585](https://github.com/kohya-ss/musubi-tuner/pull/585)
         - block swapのoffload先を共有GPUメモリからCPUメモリに変更しました。これによりトータルでのメモリ使用量は変わりませんが、共有GPUメモリの使用量が大幅に削減されます。
@@ -86,13 +92,6 @@ GitHub Discussionsを有効にしました。コミュニティのQ&A、知識�
         - これによりFP8量子化の精度が向上し、各モデル（HunyuanVideoを除く）学習の安定、推論精度の向上が期待できます。学習、推論速度はわずかに低下します。
         - Qwen-ImageのLoRA学習では、量子化対象モジュールの見直しにより、学習に必要なVRAMが5GB程度削減されます。
         - 詳細は[高度な設定のドキュメント](./docs/advanced_config.md#fp8-weight-optimization-for-models--モデルの重みのfp8への最適化)を参照してください。
-
-- 2025/09/22
-    - FramePackのVAEについて強制的にtilingが有効になっていた不具合を修正しました。`--vae_tiling`オプションを指定するか、`--vae_spatial_tile_sample_min_size`を指定することでtilingが有効になります。[PR #583](https://github.com/kohya-ss/musubi-tuner/pull/583)
-
-- 2025/09/20
-    - `qwen_image_generate_image.py` で`--from_file`での生成が動作しない不具合が修正されました。[PR #553](https://github.com/kohya-ss/musubi-tuner/pull/553) および [PR #557](https://github.com/kohya-ss/musubi-tuner/pull/557) nmfisher 氏に感謝します。
-        - また同スクリプトに`--append_original_name`オプションが追加されました。編集時に元の画像のベース名を出力ファイル名に追加します。
 
 ### リリースについて
 

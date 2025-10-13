@@ -69,6 +69,11 @@ If you find this project helpful, please consider supporting its development via
 
 GitHub Discussions Enabled: We've enabled GitHub Discussions for community Q&A, knowledge sharing, and technical information exchange. Please use Issues for bug reports and feature requests, and Discussions for questions and sharing experiences. [Join the conversation →](https://github.com/kohya-ss/musubi-tuner/discussions)
 
+- October 13, 2025
+    - Added Reference Consistency Mask (RCM) feature to Qwen-Image-Edit, 2509 inference script to improve pixel-level consistency of generated images. See [PR #643](https://github.com/kohya-ss/musubi-tuner/pull/643)
+        - RCM addresses the issue of slight positional drift in generated images compared to the control image. For details, refer to the [Qwen-Image documentation](./docs/qwen_image.md#inpainting-and-reference-consistency-mask-rcm).
+    - Fixed a bug where the control image was being resized to match the output image size even when the `--resize_control_to_image_size` option was not specified. **This may change the generated images, so please check your options.**
+    
 - October 3, 2025
     - Improved the block swap mechanism used in each training script to significantly reduce shared GPU memory usage in Windows environments. See [PR #585](https://github.com/kohya-ss/musubi-tuner/pull/585)
         - Changed the block swap offload destination from shared GPU memory to CPU memory. This does not change the total memory usage but significantly reduces shared GPU memory usage.
@@ -91,13 +96,6 @@ GitHub Discussions Enabled: We've enabled GitHub Discussions for community Q&A, 
         - This improves the accuracy of FP8 quantization, leading to more stable training and improved inference accuracy for each model (except HunyuanVideo). Training and inference speed may decrease slightly.
         - For LoRA training of Qwen-Image, the required VRAM for training is reduced by about 5GB due to a review of the quantized modules.
         - See [Advanced Configuration documentation](./docs/advanced_config.md#fp8-weight-optimization-for-models--モデルの重みのfp8への最適化) for details.
-
-- September 22, 2025
-    - A bug in FramePack where VAE was forcibly set to tiling has been fixed. Tiling is now enabled by specifying the `--vae_tiling` option or by setting `--vae_spatial_tile_sample_min_size`. See [PR #583](https://github.com/kohya-ss/musubi-tuner/pull/583)
-
-- September 20, 2025
-    - A bug in `qwen_image_generate_image.py` where generation with `--from_file` did not work has been fixed. Thanks to nmfisher for [PR #553](https://github.com/kohya-ss/musubi-tuner/pull/553). Followed by [PR #557](https://github.com/kohya-ss/musubi-tuner/pull/557).
-        - Additionally, the `--append_original_name` option has been added to the same script. This appends the base name of the original image to the output file name during editing.
 
 ### Releases
 

@@ -457,8 +457,6 @@ This self-correcting mechanism prevents the accumulation of positional errors th
 <details>
 <summary>日本語</summary>
 
-### InpaintingとReference Consistency Mask (RCM)
-
 Qwen-Image-Editにおいて、背景などを意図せず変更してしまうことを防ぐため、マスク画像を使ったInpaintingと、Reference Consistency Mask (RCM) という機能が利用可能です。
 
 **これらの機能はEdit/Edit-plusモードでのみ利用可能で、かつ最初のコントロール画像が出力画像と同じサイズである必要があります。** また、同時に使用することはできません。
@@ -470,14 +468,14 @@ Qwen-Image-Editにおいて、背景などを意図せず変更してしまう�
 - `--rcm_dilate_size`: 生成されたマスクのInpainting領域を膨張（dilate）させるサイズを指定します。変更したい領域の境界部分が確実に変更されるようにしたい場合に便利です。デフォルトは0（膨張なし）です。
 - `--rcm_debug_save`: このフラグを指定すると、各ステップで動的に生成されたRCMのマスクが出力ディレクトリに保存されます。RCMのパラメータを調整する際のデバッグに非常に役立ちます。
 
-#### 重要な使用上の注意
+**重要な使用上の注意**
 
 -   **互換性:** RCMと標準のinpaintingマスクは、どちらも**Editモード**（制御画像が提供されている場合）でのみ有効です。
 -   **要件:** これらの機能を使用するには、最初の制御画像が最終的な出力画像と**同じサイズ**である必要があります。サイズが一致しない場合、スクリプトはエラーを表示し、RCMを無効にします。
 -   **排他性:** RCMと`--mask_path`は同時に使用できません。
 -   **デバッグのヒント:** 初めてRCMを使用する際は、`--rcm_debug_save`フラグを使用することを強く推奨します。これによりマスクが出力ディレクトリに保存され、`threshold`などのパラメータがマスク生成にどのように影響しているかを視覚的に確認できます。
 
-#### RCMの技術的詳細
+**RCMの技術的詳細**
 
 Reference Consistency Mask (RCM) は、Qwen-Image-Editにおいて、生成画像が制御画像と比較してわずかな位置ずれを起こすという一般的な問題を解決するためのものです。RCMは、編集プロセスにおける構造的な安定性と位置精度を大幅に向上させます。
 
