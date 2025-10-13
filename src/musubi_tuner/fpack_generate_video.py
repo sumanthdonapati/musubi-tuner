@@ -633,7 +633,6 @@ def prepare_image_inputs(
 
     # prepare image
     def preprocess_image(image_path: str):
-        nonlocal height, width
         image = Image.open(image_path)
         if image.mode == "RGBA":
             alpha = image.split()[-1]
