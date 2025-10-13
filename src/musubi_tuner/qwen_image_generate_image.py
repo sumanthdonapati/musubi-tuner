@@ -161,7 +161,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rcm_kernel_size", type=int, default=3, help="RCM Gaussian kernel size, default is 3")
     parser.add_argument("--rcm_dilate_size", type=int, default=0, help="RCM mask dilation size, default is 0 (no dilation)")
     parser.add_argument(
-        "--rcm_debug_save", action="store_true", help="If set, save the RCM mask for debugging. Cannot be overriden by prompt line."
+        "--rcm_debug_save", action="store_true", help="If set, save the RCM mask for debugging. Cannot be overridden by prompt line."
     )
 
     # arguments for batch and interactive modes
