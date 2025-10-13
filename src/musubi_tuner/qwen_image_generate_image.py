@@ -750,10 +750,12 @@ def generate(
                 align_corners=False,
             )
             inpainting_mask = (inpainting_mask + 1.0) / 2.0  # -1 to 1 -> 0 to 1
+            # Capture the true (H, W) before flattening
+            mask_h, mask_w = inpainting_mask.shape[-2], inpainting_mask.shape[-1]
             inpainting_mask = inpainting_mask.reshape(inpainting_mask.shape[0], -1, 1)  # 1,H*W,1
             inpainting_mask = inpainting_mask.to(device, dtype=torch.bfloat16)
 
-            logger.info(f"Using inpainting mask from {args.mask_path}, resized to {inpainting_mask.shape[-2:]} (HxW)")
+            logger.info(f"Using inpainting mask from {args.mask_path}, resized to ({mask_h}, {mask_w}) (HxW)")
     else:
         inpainting_mask = None
 
