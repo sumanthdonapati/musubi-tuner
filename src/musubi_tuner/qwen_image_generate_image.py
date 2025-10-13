@@ -1108,7 +1108,7 @@ def process_batch_prompts(prompts_data: List[Dict], args: argparse.Namespace) ->
     tokenizer_batch, text_encoder_batch = qwen_image_utils.load_qwen2_5_vl(
         args.text_encoder, dtype=vl_dtype, device="cpu", disable_mmap=True
     )
-    is_edit = args.edit or args.edit_plus  # Qwen-Image-Edit or Qwen-Image
+    is_edit = args.edit or args.edit_plus  # Indicates edit modes (Qwen-Image-Edit or Edit-plus), not plain Qwen-Image
     vl_processor_batch = qwen_image_utils.load_vl_processor() if is_edit else None
 
     # Text Encoder to device for this phase
