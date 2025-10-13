@@ -18,6 +18,7 @@
   - [Overview](#overview)
     - [Hardware Requirements](#hardware-requirements)
     - [Features](#features)
+    - [Documentation](#documentation)
   - [Installation](#installation)
     - [pip based installation](#pip-based-installation)
     - [uv based installation](#uv-based-installation-experimental)
@@ -42,14 +43,7 @@
 
 This repository provides scripts for training LoRA (Low-Rank Adaptation) models with HunyuanVideo, Wan2.1/2.2, FramePack, FLUX.1 Kontext, and Qwen-Image architectures. 
 
-This repository is unofficial and not affiliated with the official HunyuanVideo/Wan2.1/2.2/FramePack/FLUX.1 Kontext/Qwen-Image repositories. 
-
-For architecture-specific documentation, please refer to:
-- [HunyuanVideo](./docs/hunyuan_video.md)
-- [Wan2.1/2.2](./docs/wan.md)
-- [FramePack](./docs/framepack.md)
-- [FLUX.1 Kontext](./docs/flux_kontext.md)
-- [Qwen-Image](./docs/qwen_image.md)
+This repository is unofficial and not affiliated with the official HunyuanVideo/Wan2.1/2.2/FramePack/FLUX.1 Kontext/Qwen-Image repositories.
 
 *This repository is under development.*
 
@@ -74,6 +68,17 @@ GitHub Discussions Enabled: We've enabled GitHub Discussions for community Q&A, 
         - RCM addresses the issue of slight positional drift in generated images compared to the control image. For details, refer to the [Qwen-Image documentation](./docs/qwen_image.md#inpainting-and-reference-consistency-mask-rcm).
     - Fixed a bug where the control image was being resized to match the output image size even when the `--resize_control_to_image_size` option was not specified. **This may change the generated images, so please check your options.**
     
+- October 5, 2025
+    - Changed the epoch switching from `collate_fn` to before the start of the DataLoader fetching loop. See [PR #601](https://github.com/kohya-ss/musubi-tuner/pull/601) for more details.
+    - In the previous implementation, the ARB buckets were shuffled after fetching the first data of the epoch. Therefore, the first data of the epoch was fetched in the ARB sorted order of the previous epoch. This caused duplication and omission of data within the epoch.
+    - Each DataSet now shuffles the ARB buckets immediately after detecting a change in the shared epoch in `__getitem__`. This ensures that data is fetched in the new order from the beginning, eliminating duplication and omission.
+    - Since the shuffle timing has been moved forward, the sample order will not be the same as the old implementation even with the same seed.
+    - **Impact on overall training**:
+        - This fix addresses the issue of incorrect fetching of the first sample at epoch boundaries. Since each sample is ultimately used without omission or duplication over multiple epochs, the overall impact on training is minimal. The change primarily enhances "consistency in consumption order within an epoch," and the long-term training behavior remains practically unchanged under the same conditions (※ there may be observable differences in cases of extremely few epochs or early stopping).
+
+    - Added a method to specify training options in a configuration file in the [Advanced Configuration documentation](./docs/advanced_config.md#using-configuration-files-to-specify-training-options--設定ファイルを使用した学習オプションの指定). See [PR #630](https://github.com/kohya-ss/musubi-tuner/pull/630).
+    - Restructured the documentation. Moved dataset configuration-related documentation to `docs/dataset_config.md`.
+
 - October 3, 2025
     - Improved the block swap mechanism used in each training script to significantly reduce shared GPU memory usage in Windows environments. See [PR #585](https://github.com/kohya-ss/musubi-tuner/pull/585)
         - Changed the block swap offload destination from shared GPU memory to CPU memory. This does not change the total memory usage but significantly reduces shared GPU memory usage.
@@ -140,7 +145,26 @@ This approach ensures that you have full control over the instructions given to 
 
 - Memory-efficient implementation
 - Windows compatibility confirmed (Linux compatibility confirmed by community)
-- Multi-GPU support not implemented
+- Multi-GPU training (using [Accelerate](https://huggingface.co/docs/accelerate/index)), documentation will be added later
+
+### Documentation
+
+For detailed information on specific architectures, configurations, and advanced features, please refer to the documentation below.
+
+**Architecture-specific:**
+- [HunyuanVideo](./docs/hunyuan_video.md)
+- [Wan2.1/2.2](./docs/wan.md)
+- [Wan2.1/2.2 (Single Frame)](./docs/wan_1f.md)
+- [FramePack](./docs/framepack.md)
+- [FramePack (Single Frame)](./docs/framepack_1f.md)
+- [FLUX.1 Kontext](./docs/flux_kontext.md)
+- [Qwen-Image](./docs/qwen_image.md)
+
+**Common Configuration & Usage:**
+- [Dataset Configuration](./docs/dataset_config.md)
+- [Advanced Configuration](./docs/advanced_config.md)
+- [Sampling during Training](./docs/sampling_during_training.md)
+- [Tools and Utilities](./docs/tools.md)
 
 ## Installation
 
@@ -198,29 +222,18 @@ Follow the instructions to add the uv path manually until you reboot your system
 
 ## Model Download
 
-Model download procedures vary by architecture. Please refer to the specific documentation for your chosen architecture:
-
-- [HunyuanVideo model download](./docs/hunyuan_video.md#download-the-model--モデルのダウンロード)
-- [Wan2.1/2.2 model download](./docs/wan.md#download-the-model--モデルのダウンロード)
-- [FramePack model download](./docs/framepack.md#download-the-model--モデルのダウンロード)
-- [FLUX.1 Kontext model download](./docs/flux_kontext.md#download-the-model--モデルのダウンロード)
-- [Qwen-Image model download](./docs/qwen_image.md#download-the-model--モデルのダウンロード)
+Model download procedures vary by architecture. Please refer to the architecture-specific documents in the [Documentation](#documentation) section for instructions.
 
 ## Usage
 
+
 ### Dataset Configuration
 
-Please refer to [dataset configuration guide](./src/musubi_tuner/dataset/dataset_config.md).
+Please refer to [here](./docs/dataset_config.md).
 
-### Pre-caching and Training
+### Pre-caching
 
-Each architecture requires specific pre-caching and training procedures. Please refer to the appropriate documentation:
-
-- [HunyuanVideo usage guide](./docs/hunyuan_video.md)
-- [Wan2.1/2.2 usage guide](./docs/wan.md)
-- [FramePack usage guide](./docs/framepack.md)
-- [FLUX.1 Kontext usage guide](./docs/flux_kontext.md)
-- [Qwen-Image usage guide](./docs/qwen_image.md)
+Pre-caching procedures vary by architecture. Please refer to the architecture-specific documents in the [Documentation](#documentation) section for instructions.
 
 ### Configuration of Accelerate
 
@@ -241,18 +254,7 @@ Run `accelerate config` to configure Accelerate. Choose appropriate values for e
 
 ### Training and Inference
 
-Training and inference procedures vary significantly by architecture. Please refer to the specific documentation for detailed instructions:
-
-- [HunyuanVideo training and inference](./docs/hunyuan_video.md)
-- [Wan2.1/2.2 training and inference](./docs/wan.md)
-- [FramePack training and inference](./docs/framepack.md)
-- [FLUX.1 Kontext training and inference](./docs/flux_kontext.md)
-- [Qwen-Image training and inference](./docs/qwen_image.md)
-
-For advanced configuration options and additional features, refer to:
-- [Advanced configuration](./docs/advanced_config.md)
-- [Sample generation during training](./docs/sampling_during_training.md)
-- [Tools and utilities](./docs/tools.md)
+Training and inference procedures vary significantly by architecture. Please refer to the architecture-specific documents in the [Documentation](#documentation) section and the various configuration documents for detailed instructions.
 
 ## Miscellaneous
 
