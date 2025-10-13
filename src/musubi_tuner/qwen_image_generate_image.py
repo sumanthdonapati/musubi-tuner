@@ -844,9 +844,10 @@ def generate(
 
                     # apply blur to both latents to make smoother
                     if args.rcm_kernel_size > 1:
-                        latents_reshaped = TF.gaussian_blur(latents_reshaped, [args.rcm_kernel_size, args.rcm_kernel_size])
+                        kernel_size = args.rcm_kernel_size | 1  # Ensure odd kernel size
+                        latents_reshaped = TF.gaussian_blur(latents_reshaped, [kernel_size, kernel_size])
                         noisy_control_latent_reshaped = TF.gaussian_blur(
-                            noisy_control_latent_reshaped, [args.rcm_kernel_size, args.rcm_kernel_size]
+                            noisy_control_latent_reshaped, [kernel_size, kernel_size]
                         )
 
                     diff = torch.abs(latents_reshaped - noisy_control_latent_reshaped)  # B,c,h,w
