@@ -161,7 +161,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rcm_kernel_size", type=int, default=3, help="RCM Gaussian kernel size, default is 3")
     parser.add_argument("--rcm_dilate_size", type=int, default=0, help="RCM mask dilation size, default is 0 (no dilation)")
     parser.add_argument(
-        "--rcm_debug_save", action="store_true", help="If set, save the RCM mask for debugging. Cannot be overridden by prompt line."
+        "--rcm_debug_save",
+        action="store_true",
+        help="If set, save the RCM mask for debugging. Cannot be overridden by prompt line.",
     )
 
     # arguments for batch and interactive modes
@@ -445,7 +447,7 @@ def prepare_image_inputs(
 
         for path in args.control_image_path:
             control_image_tensor, control_image_np, _ = qwen_image_utils.preprocess_control_image(
-                path, args.resize_control_to_official_size, (width, height)
+                path, args.resize_control_to_official_size, (width, height) if args.resize_control_to_image_size else None
             )
 
             # VAE encoding
@@ -846,9 +848,7 @@ def generate(
                     if args.rcm_kernel_size > 1:
                         kernel_size = args.rcm_kernel_size | 1  # Ensure odd kernel size
                         latents_reshaped = TF.gaussian_blur(latents_reshaped, [kernel_size, kernel_size])
-                        noisy_control_latent_reshaped = TF.gaussian_blur(
-                            noisy_control_latent_reshaped, [kernel_size, kernel_size]
-                        )
+                        noisy_control_latent_reshaped = TF.gaussian_blur(noisy_control_latent_reshaped, [kernel_size, kernel_size])
 
                     diff = torch.abs(latents_reshaped - noisy_control_latent_reshaped)  # B,c,h,w
 
@@ -861,7 +861,12 @@ def generate(
                     latent_mask = (diff_per_channel >= th).to(dtype=torch.bfloat16)  # 1.0 for inpainting region, 0.0 for keep
 
                     # resize mask to match packed latent size (H//16, W//16)
-                    latent_mask = F.interpolate(latent_mask, size=(height // 16, width // 16), mode="bilinear", align_corners=False)
+                    latent_mask = F.interpolate(
+                        latent_mask,
+                        size=(height // (VAE_SCALE_FACTOR * 2), width // (VAE_SCALE_FACTOR * 2)),
+                        mode="bilinear",
+                        align_corners=False,
+                    )
 
                     if args.rcm_debug_save:
                         logger.info(
@@ -878,9 +883,14 @@ def generate(
 
                     # visualize mask for debugging, H*W -> H, W
                     if args.rcm_debug_save:
-                        mask_np = (latent_mask[0, :].reshape(int(height / 16), int(width / 16)).float().cpu().numpy() * 255).astype(
-                            np.uint8
-                        )
+                        mask_np = (
+                            latent_mask[0, :]
+                            .reshape(int(height / (VAE_SCALE_FACTOR * 2)), int(width / (VAE_SCALE_FACTOR * 2)))
+                            .float()
+                            .cpu()
+                            .numpy()
+                            * 255
+                        ).astype(np.uint8)
                         mask_image = Image.fromarray(mask_np)
                         mask_image.save(os.path.join(args.save_path, f"{debug_save_prefix}rcm_mask_{i:02d}.png"))
 
